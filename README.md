@@ -14,16 +14,32 @@ There's no reason to have RockShot functionality always enabled, so I reccomend 
 
 You'll need to include `rockshot.h` in your main sourc file.
 
-    #if ROCKSHOT
-    #include "rockshot.h"
-    #endif
+```c
+#if ROCKSHOT
+#include "rockshot.h"
+#endif
+```
 
 ### Main
 
-In `pbl_main()`, after you've 
+In `pbl_main()`, after you've declared the `handlers` structure, but before you call `app_event_loop()`:
 
+```c
 #if ROCKSHOT
-  http_capture_main(&handlers);
-  #endif
+rockshot_main(&handlers);
+#endif
+```
 
 ### Init
+
+In your `init_handler` function, 
+
+```c
+#if ROCKSHOT
+http_capture_init(ctx);
+#endif
+```
+
+--
+
+It's as simple as that!
