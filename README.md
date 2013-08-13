@@ -30,6 +30,10 @@ rockshot_main(&handlers);
 #endif
 ```
 
+#### Messaging Buffers
+
+At the moment, RockShot uses a large buffer size in order to send the screenshot quickly. You'll need to make sure that your outgoing buffer size is set to at least 256.
+
 ### Init
 
 In your `init_handler` function, 
