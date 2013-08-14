@@ -40,7 +40,7 @@ In your `init_handler` function,
 
 ```c
 #if ROCKSHOT
-http_capture_init(ctx);
+rockshot_init(ctx);
 #endif
 ```
 
