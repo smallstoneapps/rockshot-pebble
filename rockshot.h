@@ -2,7 +2,7 @@
  * RockShot
  * Copyright (C) 2013 Matthew Tole
  *
- * The functions for capturing and transmitting a screenshot from the Pebble is
+ * The code for capturing and transmitting a screenshot from the Pebble is
  * based on httpcapture written by Edward Patel. (https://github.com/epatel)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -29,13 +29,10 @@
 #include "pebble_os.h"
 #include "pebble_app.h"
 
-#define MAX_SCREENSHOTS 2
-
 void rockshot_main(PebbleAppHandlers* handlers);
 void rockshot_init(AppContextRef* ctx);
-void rockshot_capture_single();
-/*void rockshot_capture_multiple(int count, int interval);*/
+void rockshot_capture_single(int id);
 bool rockshot_capture_in_progress();
-void rockshot_cancel();
+void rockshot_cancel(int id);
 
 #endif // ROCKSHOT_H
