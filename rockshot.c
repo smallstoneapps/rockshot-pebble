@@ -10,21 +10,17 @@
 #include "rockshot.h"
 
 #define ROCKSHOT_DATA_PADDING 64
-#define ROCKSHOT_COOKIE_SEND 7625002
 
-#define ROCKSHOT_KEY_OFFSET 76250
+#define ROCKSHOT_KEY_HEADER 76250
 #define ROCKSHOT_KEY_DATA 76251
-#define ROCKSHOT_KEY_CHECK 76252
-#define ROCKSHOT_KEY_OP 76253
-#define ROCKSHOT_KEY_ID 76254
-#define ROCKSHOT_KEY_BYTES_LEFT 76255
-#define ROCKSHOT_KEY_SIZE 76256
+
+#define ROCKSHOT_OP_CANCEL 0
+#define ROCKSHOT_OP_SINGLE 1
 
 typedef struct {
   unsigned char* data;
   int bytes_sent;
   int size;
-  int id;
   GRect bounds;
 } Screenshot;
 
@@ -77,10 +73,9 @@ void rockshot_setup(int outgoing_buffer_size) {
   in_progress = false;
 }
 
-void rockshot_capture_single(int id) {
+void rockshot_capture_single() {
   if (in_progress) { return; }
   in_progress = true;
-  screenshot.id = id;
   capture_screenshot(&screenshot);
   send_screenshot(&screenshot);
 }
@@ -89,10 +84,7 @@ bool rockshot_capture_in_progress() {
   return in_progress;
 }
 
-void rockshot_cancel(int id) {
-  if (id != screenshot.id) {
-    return;
-  }
+void rockshot_cancel() {
   if (timer_sending != NULL) {
     app_timer_cancel(timer_sending);
     timer_sending = NULL;
@@ -135,29 +127,16 @@ static void capture_screenshot(Screenshot* screenshot) {
 }
 
 static void data_received(DictionaryIterator *received, void *context) {
-
-  Tuple* tup_check = dict_find(received, ROCKSHOT_KEY_CHECK);
-  Tuple* tup_id = dict_find(received, ROCKSHOT_KEY_ID);
-  Tuple* tup_op = dict_find(received, ROCKSHOT_KEY_OP);
-
-  if (tup_check == NULL) {
+  Tuple* tup_header = dict_find(received, ROCKSHOT_KEY_HEADER);
+  if (tup_header == NULL) {
     return;
   }
-
-  if (strcmp(tup_check->value->cstring, "rockshot") != 0) {
-    return;
+  if (strcmp(tup_header->value->cstring, "single") == 0) {
+    rockshot_cancel();
+    rockshot_capture_single();
   }
-
-  if (tup_op == NULL) {
-    return;
-  }
-
-  if (strcmp(tup_op->value->cstring, "single") == 0) {
-    rockshot_cancel(screenshot.id);
-    rockshot_capture_single(tup_id->value->int32);
-  }
-  else if (strcmp(tup_op->value->cstring, "cancel") == 0) {
-    rockshot_cancel(tup_id->value->int32);
+  else if (strcmp(tup_header->value->cstring, "single") == 0) {
+    rockshot_cancel();
   }
 }
 
@@ -186,10 +165,9 @@ static void send_bytes(Screenshot* shot) {
     return;
   }
 
-  dict_write_int16(dict, ROCKSHOT_KEY_OFFSET, shot->bytes_sent);
-  dict_write_int16(dict, ROCKSHOT_KEY_ID, shot->id);
-  dict_write_int16(dict, ROCKSHOT_KEY_SIZE, shot->size);
-  dict_write_int16(dict, ROCKSHOT_KEY_BYTES_LEFT, shot->bytes_sent);
+  char header[32];
+  snprintf(header, 32, "%d|%d|%d|%d|%d", shot->bytes_sent, bytes_to_send, shot->size, shot->bounds.size.w, shot->bounds.size.h);
+  dict_write_cstring(dict, ROCKSHOT_KEY_HEADER, header);
   dict_write_data(dict, ROCKSHOT_KEY_DATA, &shot->data[shot->bytes_sent], bytes_to_send);
 
   result = app_message_outbox_send();

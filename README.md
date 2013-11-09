@@ -20,13 +20,11 @@ You'll need to include `rockshot.h` in your main sourc file.
 #endif
 ```
 
-### Main
-
-In `pbl_main()`, after you've declared the `handlers` structure, but before you call `app_event_loop()`:
+### Init
 
 ```c
 #if ROCKSHOT
-rockshot_main(&handlers);
+rockshot_init();
 #endif
 ```
 
