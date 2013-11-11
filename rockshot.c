@@ -112,6 +112,9 @@ static void rockshot_timer_handler() {
 }
 
 static void capture_screenshot(Screenshot* screenshot) {
+  if (screenshot->data != NULL) {
+    free(screenshot->data);
+  }
   screenshot->data = malloc(sizeof(unsigned char) * screenshot->size);
   unsigned char *ptr = (unsigned char *)(gctx->ptr);
 
