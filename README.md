@@ -1,3 +1,7 @@
+## PROJECT ABANDONED
+
+RockShot has been made redundant with the introduction of a native screenshot function in the *pebble* command line tool. No further work will be done on the RockShot library.
+
 # RockShot // Pebble Library
 
 This is the Pebble library that enables RockShot capabilities in your app or watchface.
